@@ -1,0 +1,483 @@
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+  redis:
+    password: ""
+
+useHostnames: true
+
+diagnosticMode:
+  enabled: false
+  command:
+    - sleep
+  args:
+    - infinity
+image:
+  registry: docker.io
+  repository: bitnami/redis
+  tag: 7.0.9-debian-11-r0
+  digest: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+  ## Enable debug mode
+  ##
+  debug: false
+
+##
+architecture: replication
+auth:
+  enabled: true
+  sentinel: false 
+  password: "Dev@2022"
+  existingSecret: ""
+  existingSecretPasswordKey: ""
+  usePasswordFiles: false
+commonConfiguration: |-
+  appendonly yes
+  save ""
+existingConfigmap: ""
+
+
+master:
+  count: 2
+  configuration: ""
+  disableCommands:
+    - FLUSHDB
+    - FLUSHALL
+  command: []
+  containerPorts:
+    redis: 6379
+  startupProbe:
+    enabled: false
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 5
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 5
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 5
+  resources:
+    limits: {}
+    requests: {}
+  podSecurityContext:
+    enabled: true
+    fsGroup: 1001
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 1001
+  kind: StatefulSet
+  schedulerName: ""
+  updateStrategy:
+    ## StrategyType
+    ## Can be set to RollingUpdate, OnDelete (statefulset), Recreate (deployment)
+    ##
+    type: RollingUpdate
+  minReadySeconds: 0
+  priorityClassName: ""
+  hostAliases: []
+  podLabels: {}
+  podAnnotations: {}
+  shareProcessNamespace: false
+  podAffinityPreset: ""
+  podAntiAffinityPreset: soft
+  ##
+  persistence:
+    enabled: true
+    medium: ""
+    sizeLimit: ""
+    path: /data
+    subPath: ""
+    subPathExpr: ""
+    storageClass: "gfs1-ssd"
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    annotations: {}
+  service:
+    ## @param master.service.type Redis&reg; master service type
+    ##
+    type: ClusterIP
+    ## @param master.service.ports.redis Redis&reg; master service port
+    ##
+    ports:
+      redis: 6379
+    nodePorts:
+      redis: ""
+    externalTrafficPolicy: Cluster
+    extraPorts: []
+    internalTrafficPolicy: Cluster
+    ## @param master.service.clusterIP Redis&reg; master service Cluster IP
+    ##
+    clusterIP: ""
+    ## @param master.service.loadBalancerIP Redis&reg; master service Load Balancer IP
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
+    ##
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalIPs: []
+    annotations: {}
+    sessionAffinity: None
+    sessionAffinityConfig: {}
+  terminationGracePeriodSeconds: 30
+  serviceAccount:
+    create: false
+    name: ""
+    automountServiceAccountToken: true
+    annotations: {}
+
+
+replica:
+  replicaCount: 2
+  configuration: ""
+  disableCommands:
+    - FLUSHDB
+    - FLUSHALL
+  command: []
+  args: []
+  preExecCmds: []
+  ## extraFlags:
+  ##  - "--maxmemory-policy volatile-ttl"
+  ##  - "--repl-backlog-size 1024mb"
+  ##
+  extraFlags: []
+  extraEnvVars: []
+  extraEnvVarsCM: ""
+  extraEnvVarsSecret: ""
+  externalMaster:
+    enabled: false
+    host: ""
+    port: 6379
+  containerPorts:
+    redis: 6379
+  startupProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 22
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 5
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 5
+  customStartupProbe: {}
+  customLivenessProbe: {}
+  customReadinessProbe: {}
+  ##
+  resources:
+    limits: {}
+    #   cpu: 250m
+    #   memory: 256Mi
+    requests: {}
+    #   cpu: 250m
+    #   memory: 256Mi
+  podSecurityContext:
+    enabled: true
+    fsGroup: 1001
+  ##
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 1001
+  ## @param replica.schedulerName Alternate scheduler for Redis&reg; replicas pods
+  schedulerName: ""
+  updateStrategy:
+    ## StrategyType
+    ## Can be set to RollingUpdate, OnDelete (statefulset), Recreate (deployment)
+    ##
+    type: RollingUpdate
+  minReadySeconds: 0
+  priorityClassName: ""
+  podManagementPolicy: ""
+  hostAliases: []
+  podLabels: {}
+  podAnnotations: {}
+  shareProcessNamespace: false
+  podAffinityPreset: ""
+  podAntiAffinityPreset: soft
+  nodeAffinityPreset:
+    type: ""
+    key: ""
+    values: []
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+  ##
+  topologySpreadConstraints: []
+  dnsPolicy: ""
+  ##
+  dnsConfig: {}
+  lifecycleHooks: {}
+  extraVolumes: []
+  extraVolumeMounts: []
+  sidecars: []
+  initContainers: []
+  ##
+  persistence:
+    enabled: true
+    medium: ""
+    sizeLimit: ""
+    path: /data
+    subPath: ""
+    subPathExpr: ""
+    storageClass: "gfs1-ssd"
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    annotations: {}
+    selector: {}
+    dataSource: {}
+    existingClaim: ""
+  service:
+    ## @param replica.service.type Redis&reg; replicas service type
+    ##
+    type: ClusterIP
+    ## @param replica.service.ports.redis Redis&reg; replicas service port
+    ##
+    ports:
+      redis: 6379
+    nodePorts:
+      redis: ""
+    ##
+    externalTrafficPolicy: Cluster
+    ##
+    internalTrafficPolicy: Cluster
+    extraPorts: []
+    clusterIP: ""
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    annotations: {}
+    sessionAffinity: None
+    sessionAffinityConfig: {}
+  terminationGracePeriodSeconds: 30
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    ## @param replica.autoscaling.maxReplicas Maximum replicas for the pod autoscaling
+    ##
+    maxReplicas: 11
+    ## @param replica.autoscaling.targetCPU Percentage of CPU to consider when autoscaling
+    ##
+    targetCPU: ""
+    ## @param replica.autoscaling.targetMemory Percentage of Memory to consider when autoscaling
+    ##
+    targetMemory: ""
+  serviceAccount:
+    create: false
+    name: ""
+    ##
+    automountServiceAccountToken: true
+    annotations: {}
+##
+
+sentinel:
+  enabled: false
+  ##
+  image:
+    registry: docker.io
+    repository: bitnami/redis-sentinel
+    tag: 7.0.8-debian-11-r16
+    digest: ""
+    ## Specify a imagePullPolicy
+    ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+    ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+    ##
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+    ## Enable debug mode
+    ##
+    debug: false
+  ## @param sentinel.masterSet Master set name
+  ##
+  masterSet: mymaster
+  quorum: 2
+  getMasterTimeout: 220
+  automateClusterRecovery: false
+  redisShutdownWaitFailover: true
+  downAfterMilliseconds: 60000
+  failoverTimeout: 180000
+  parallelSyncs: 1
+  ##
+  configuration: ""
+  command: []
+  args: []
+  preExecCmds: []
+  extraEnvVars: []
+  extraEnvVarsCM: ""
+  extraEnvVarsSecret: ""
+  externalMaster:
+    enabled: false
+    host: ""
+    port: 6379
+  containerPorts:
+    sentinel: 26379
+  startupProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 22
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 5
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 5
+  customStartupProbe: {}
+  customLivenessProbe: {}
+  customReadinessProbe: {}
+  persistence:
+    enabled: false
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 100Mi
+    annotations: {}
+    selector: {}
+    dataSource: {}
+    medium: ""
+    sizeLimit: ""
+  resources:
+    limits: {}
+    requests: {}
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 1001
+  lifecycleHooks: {}
+  extraVolumes: []
+  extraVolumeMounts: []
+  ##
+  service:
+    ##
+    type: ClusterIP
+    ports:
+      redis: 6379
+      sentinel: 26379
+    nodePorts:
+      redis: ""
+      sentinel: ""
+    externalTrafficPolicy: Cluster
+    extraPorts: []
+    clusterIP: ""
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    annotations: {}
+    sessionAffinity: None
+    sessionAffinityConfig: {}
+  terminationGracePeriodSeconds: 30
+
+serviceBindings:
+  enabled: false
+
+networkPolicy:
+  enabled: false
+  allowExternal: true
+  extraIngress: []
+serviceAccount:
+  ## @param serviceAccount.create Specifies whether a ServiceAccount should be created
+  ##
+  create: true
+  ## @param serviceAccount.name The name of the ServiceAccount to use.
+  ## If not set and create is true, a name is generated using the common.names.fullname template
+  ##
+  name: ""
+  ## @param serviceAccount.automountServiceAccountToken Whether to auto mount the service account token
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#use-the-default-service-account-to-access-the-api-server
+  ##
+  automountServiceAccountToken: true
+  ## @param serviceAccount.annotations Additional custom annotations for the ServiceAccount
+  ##
+  annotations: {}
+## Redis&reg; Pod Disruption Budget configuration
+metrics:
+  enabled: true 
+  ## Bitnami Redis&reg; Exporter image
+  image:
+    registry: docker.io
+    repository: bitnami/redis-exporter
+    tag: 1.47.0-debian-11-r1
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+  startupProbe:
+    enabled: false
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 5
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 5
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+  redisTargetHost: "localhost"
+  extraArgs: {}
+  extraEnvVars: []
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 1001
+  ## @param metrics.extraVolumes Optionally specify extra list of additional volumes for the Redis&reg; metrics sidecar
+  ##
+  extraVolumes: []
+sysctl:
+  ## @param sysctl.enabled Enable init container to modify Kernel settings
+  ##
+  enabled: false
+  image:
+    registry: docker.io
+    repository: bitnami/bitnami-shell
+    tag: 11-debian-11-r92
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+  command: []
+  mountHostSys: false
+  resources:
+    limits: {}
+    requests: {}
+useExternalDNS:
+  enabled: false
+  suffix: ""
+  annotationKey: external-dns.alpha.kubernetes.io/
+  additionalAnnotations: {}
